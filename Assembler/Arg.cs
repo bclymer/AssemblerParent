@@ -11,7 +11,7 @@ namespace Assembler
         public string Label;
         public bool IsLabel;
 
-        public Arg(string arg, bool containsLabel)
+        public Arg(string arg, bool containsLabel, bool allowSixBit)
         {
             if (arg.Contains('('))
             {
@@ -45,7 +45,8 @@ namespace Assembler
                     IsLabel = true;
                 }
             }
-            if (!IsLabel && (Value > 7 || OutsideValue > 63))
+            var maxValue = allowSixBit ? 63 : 7;
+            if (!IsLabel && (Value > maxValue || OutsideValue > 63))
             {
                 throw new ValueTooLargeException();
             }

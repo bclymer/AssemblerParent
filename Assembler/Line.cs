@@ -110,10 +110,13 @@ namespace Assembler
                     throw new OperationNotFoundException();
             }
             Args = new List<Arg>();
+            var i = 1;
             foreach (var s in parts[1].Split(','))
             {
                 var containsLabel = (Type.Equals("bne") || Type.Equals("beq") || Type.Equals("j"));
-                Args.Add(new Arg(s, containsLabel));
+                var allowSixBits = Format == Format.I && i == 3;
+                Args.Add(new Arg(s, containsLabel, allowSixBits));
+                i++;
             }
         }
 
