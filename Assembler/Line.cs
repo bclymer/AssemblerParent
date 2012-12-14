@@ -120,10 +120,10 @@ namespace Assembler
             }
         }
 
-        public string GetRd()
+        public string GetRd(int lineNumber)
         {
-            if (Args[0].Type == ArgType.HasDollarSign && Args[0].Value == 0 && !Type.Equals("jr"))
-                Console.WriteLine("Program attempts to write to register 0, this will fail during execution!!!");
+            if (Args[0].Type == ArgType.HasDollarSign && Args[0].Value == 0 && !Type.Equals("jr") && !Type.Equals("sw"))
+                Console.WriteLine("Program attempts to write to register 0 at line " + lineNumber + ", this will fail during execution!!!");
             switch (Args[0].Type)
             {
                 case ArgType.HasDollarSign:
@@ -136,7 +136,7 @@ namespace Assembler
             throw new ArgRdTypeNotSetException();
         }
 
-        public string GetRs()
+        public string GetRs(int lineNumber)
         {
             switch (Args[1].Type)
             {
@@ -150,7 +150,7 @@ namespace Assembler
             throw new ArgRsTypeNotSetException();
         }
 
-        public string GetRt()
+        public string GetRt(int lineNumber)
         {
             switch (Args[2].Type)
             {
@@ -164,7 +164,7 @@ namespace Assembler
             throw new ArgRtTypeNotSetException();
         }
 
-        public string GetImmediate()
+        public string GetImmediate(int lineNumber)
         {
             KeyValuePair<int, string> lineOfLabel;
             switch (Format)
@@ -175,6 +175,8 @@ namespace Assembler
                         case "bne":
                         case "beq":
                             lineOfLabel = Program.Labels.FirstOrDefault(x => x.Value.Equals(Args[2].Label));
+                            if (lineOfLabel.Value == null)
+                                Console.WriteLine("WARNING: Couldn't find label " + Args[2].Label + " to jump to at line " + lineNumber);
                             return Program.DecToBinary(lineOfLabel.Key).PadLeft(6, '0');
                         case "lw":
                         case "sw":
@@ -187,6 +189,8 @@ namespace Assembler
                     {
                         case "j":
                             lineOfLabel = Program.Labels.FirstOrDefault(x => x.Value.Equals(Args[0].Label));
+                            if (lineOfLabel.Value == null)
+                                Console.WriteLine("WARNING: Couldn't find label " + Args[2].Label + " to jump to at line " + lineNumber);
                             return Program.DecToBinary(lineOfLabel.Key).PadLeft(6, '0');
                         default:
                             return "000000";

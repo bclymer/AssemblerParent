@@ -56,7 +56,7 @@ namespace Assembler
             var pass1 = new Pass1();
             for (var i = 0; i < _inputLines.Count; i++)
             {
-                string line = _inputLines[i].Trim(' ', '\t');
+                var line = _inputLines[i].Trim(' ', '\t');
                 if (line.Count(f => f == '(') != line.Count(f => f == ')'))
                 {
                     pass1.Success = false;
@@ -65,11 +65,13 @@ namespace Assembler
                     return pass1;
                 }
                 var containsLabel = line.Contains(":");
-                if (containsLabel)
+                if (!containsLabel) continue;
+                if (i > 63)
                 {
-                    Labels.Add(i, line.Substring(0, line.IndexOf(':')));
+                    Console.WriteLine("Label " + line.Substring(0, line.IndexOf(':')) + " is on line " + i +
+                                      " which is too high to skip to. It must be below line 64");
                 }
-
+                Labels.Add(i, line.Substring(0, line.IndexOf(':')));
             }
             return pass1;
         }
@@ -86,7 +88,7 @@ namespace Assembler
 
             for (var i = 0; i < _inputLines.Count; i++)
             {
-                string formattedLine = _inputLines[i];
+                var formattedLine = _inputLines[i];
                 if (Labels.ContainsKey(i))
                 {
                     formattedLine = _inputLines[i].Replace(Labels[i] + ":", "");
@@ -99,26 +101,26 @@ namespace Assembler
                     switch (line.Format)
                     {
                         case Format.R:
-                            _outputText += line.GetRd();
+                            _outputText += line.GetRd(i + 1);
                             if (line.Type.Equals("jr"))
                             {
                                 _outputText += "000000000";
                             }
                             else
                             {
-                                _outputText += line.GetRs();
-                                _outputText += line.GetRt();
+                                _outputText += line.GetRs(i + 1);
+                                _outputText += line.GetRt(i + 1);
                                 _outputText += DecToBinary(line.AluCode).PadLeft(3, '0');
                             }
                             break;
                         case Format.I:
-                            _outputText += line.GetRd();
-                            _outputText += line.GetRs();
-                            _outputText += line.GetImmediate();
+                            _outputText += line.GetRd(i + 1);
+                            _outputText += line.GetRs(i + 1);
+                            _outputText += line.GetImmediate(i + 1);
                             break;
                         case Format.J:
                             _outputText += "000000"; // unused stuff
-                            _outputText += line.GetImmediate();
+                            _outputText += line.GetImmediate(i + 1);
                             break;
                     }
                     _outputText += ";\n";
